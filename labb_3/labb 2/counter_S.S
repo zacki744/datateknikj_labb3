@@ -4,14 +4,7 @@
 .text
 .global setup
 .global interrupt
-.global inImage
-.global getText
 
-inImage:
-	moveq $buf,$rdi
-	moveq $0,$rdi
-	ret
-getText:
 
 
 interrupt:
