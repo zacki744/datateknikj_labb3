@@ -6,8 +6,8 @@ sum:	.quad	0
 count:	.quad	0
 temp:	.quad	0
 
-	.text
-	.global	main
+.text
+.global	main
 main:
 	pushq	$0
 	movq	$headMsg,%rdi
