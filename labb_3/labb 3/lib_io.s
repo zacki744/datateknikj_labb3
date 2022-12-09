@@ -37,7 +37,6 @@ getChar:
     //add
     movzbq (buf_IN,index_IN,1), %rax
     incq index_IN 
-    
     ret
 
 getInPos:
@@ -45,10 +44,23 @@ getInPos:
     ret
     
 setInPos:
+    cmpq %rdi,$0 //check if 0
+    jg setInPoszero
+    cmpq %rdi,index_IN //check if out of range
+    jl setInPoszero
+    movq %rdi, index_IN //set
     ret
-
+setInPoszero: //set to 0
+    movq $0,%rdi
+    ret
+setInPoslarg: //set to max
+    movq index_IN, %rdi
+    ret
 //output dec
 outImage:
+    leaq stdout, %rcx 
+    movzbq (%rcx,index_UT,1), buf_UT
+    xorq BUF_UT, buf_UT
     ret
     
 putInt:
@@ -61,7 +73,19 @@ putChar:
     ret
     
 getOutPos:
+    movq %rax, index_UT
     ret
 
-getOutPos:
+setOutPos:
+    cmpq %rdi,$0 //check if 0
+    jg setOutPoszero
+    cmpq %rdi,index_UT //check if out of range
+    jl setOutPoszero
+    movq %rdi, index_UT //set
+    ret
+setOutPoszero: //set to 0
+    movq $0,%rdi
+    ret
+setOutPoslarg: //set to max
+    movq index_UT, %rdi
     ret
