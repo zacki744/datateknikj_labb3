@@ -1,7 +1,8 @@
+.equ MAXPOS, 64
 
 .data
-    buf_IN     .quad 0
-    buf_UT     .quad 0
+    buf_IN     .quad MAXPOS+1
+    buf_UT     .quad MAXPOS+1
     temp       .quad 0
     index_IN   .quad 0
     index_UT   .quad 0
@@ -14,9 +15,11 @@
 
 //input dec
 inImage:
-    leaq stdin, %rcx 
-    movzbq (%rcx,index_IN,1), buf_IN
-    xorq %rdi,%rdi
+    movq buf_IN, %rdi
+    movq %MAXPOS+1, %rsi
+    movq stdin, %rdx
+    call fgets
+    movq $0, index_IN
     ret
 
 getInt:
@@ -27,49 +30,54 @@ getText:
 
 getChar:
     // comparisons
-    cmpq index_IN, $0
-    je inImage
-    // out of range
-    movzbq (buf_IN,index_IN,1), temp
-    cmpq temp, $0
-    je inImage
-    xorq temp,temp
-    //add
+    cmpq $MAXPOS,index_IN
+    jl getChar_Complete
+    call inImage
+getChar_Complete:
     movzbq (buf_IN,index_IN,1), %rax
     incq index_IN 
     ret
 
 getInPos:
-    movq %rax, index_IN
+    movq index_IN, %rax
     ret
     
 setInPos:
-    cmpq %rdi,$0 //check if 0
-    jg setInPoszero
-    cmpq %rdi,index_IN //check if out of range
-    jl setInPoszero
+    cmpq $0, %rdi //check if 0
+    jl setInPos_Zero
+    cmpq MAXPOS,%rdi //check if out of range
+    jge setInPos_Large
     movq %rdi, index_IN //set
     ret
-setInPoszero: //set to 0
+setInPos_Zero: //set to 0
     movq $0,%rdi
     ret
-setInPoslarg: //set to max
+setInPos_Large: //set to max
     movq index_IN, %rdi
     ret
 //output dec
 outImage:
-    leaq stdout, %rcx 
-    movzbq (%rcx,index_UT,1), buf_UT
-    xorq BUF_UT, buf_UT
+    movq buf_UT, %rdi
+    call puts
+    movq $0, buf_UT
+    movq $0, index_UT
     ret
-    
 putInt:
     ret
     
 putText:
+    
     ret
     
 putChar:
+    // comparisons  
+    cmpq $MAXPOS,index_UT
+    jl putChar_Complete
+    call outImage
+    ret
+putChar_Complete:
+    movq %rdi, (buf_UT,index_UT,1)
+    incq index_UT
     ret
     
 getOutPos:
@@ -77,15 +85,15 @@ getOutPos:
     ret
 
 setOutPos:
-    cmpq %rdi,$0 //check if 0
-    jg setOutPoszero
-    cmpq %rdi,index_UT //check if out of range
-    jl setOutPoszero
+    cmpq $0, %rdi //check if 0
+    jl setOutPos_Zero: //set to 0
+    cmpq MAXPOS,%rdi //check if out of range
+    jge setOutPos_Large
     movq %rdi, index_UT //set
     ret
-setOutPoszero: //set to 0
+setOutPos_Zero: //set to 0
     movq $0,%rdi
     ret
-setOutPoslarg: //set to max
+setOutPos_Large: //set to max
     movq index_UT, %rdi
     ret
