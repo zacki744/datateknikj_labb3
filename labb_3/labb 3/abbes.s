@@ -85,7 +85,7 @@ getText_loop:
 
 getText_loop_update:
 	movq $inBuf,%rdi
-	movq inPos,%rdx
+	movq inPos,% 
 	addq %rdx,%rdi
 	incq inPos
 	movb (%rdi),%al

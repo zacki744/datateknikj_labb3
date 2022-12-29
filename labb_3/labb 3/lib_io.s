@@ -1,26 +1,23 @@
 .equ Max_Buf_In,64
 .equ Max_Buf_Out,64
-.data
-    buf_IN:     .space Max_Buf_In+1
-    buf_UT:     .space Max_Buf_Out+1
-    index_IN:   .quad 0
-    index_UT:   .quad 0
 
-//input
-.global inImage, getInt, getText, getChar, getInPos, setInPos
+	.data
+buf_IN:	.space Max_Buf_In+1
+buf_UT:	.space Max_Buf_Out+1
+index_IN:	.quad 0
+index_UT:	.quad 0
 
-//output
-.global outImage, putInt, putText, putChar, getOutPos, setOutPos
+	.text
+	.global inImage,getInt,getText,getChar,getInPos,setInPos
+	.global outImage,putInt,putText,putChar,getOutPos,setOutPos
 
-//input dec
 inImage:
-    movq $buf_IN, %rdi # get buf pos
-    movq $Max_Buf_In+1, %rsi # get buf size
-    movq stdin, %rdx # get stdin
-    call fgets # read from stdin
-    movq $0, index_IN # set index to 0
-
-    ret
+	movq $buf_IN,%rdi
+	movq $Max_Buf_In+1,%rsi
+	movq stdin,%rdx
+	call fgets
+	movq $0,index_IN
+	ret
 
 getInt:
     pushq $0 
@@ -73,9 +70,9 @@ getInt_end2:
     ret
 
 getText:
-    pushq $rsi
-    pushq $rsi   
-    pushq $rdi
+    pushq %rsi
+    pushq %rsi   
+    pushq %rdi
 
 getText_loop:
     cmpq $0,8(%rsp)
@@ -125,10 +122,10 @@ getInPos:
 setInPos:
 	# rdi = n
 	cmpq $0,%rdi
-	jl setInPos_0
-	cmpq $MAX_INBUFFER_SIZE,%rdi
-	jge setInPos_MAX
-	movq %rdi,inPos
+	jl setInPoszero
+	cmpq $Max_Buf_In,%rdi
+	jge setInPoslarg
+	movq %rdi,index_IN
 	ret 
 
 setInPoszero: //set to 0
@@ -141,11 +138,10 @@ setInPoslarg: //set to max
 
 //output dec
 outImage:
-    movq $buf_UT, %rdi
-    call puts
-    movq $0, buf_ut
-
-    movq $0, index_UT
+	movq $buf_UT,%rdi
+	call puts
+	movb $0,buf_UT # append null byte
+	movq $0,index_UT
     ret
 putInt:
     pushq %rbp # save rbp
@@ -181,39 +177,43 @@ putInt_loop:
     ret
 
 putText:
-    # rdi is used as addres of buf
-    pushq %rdi # save rdi
+	# rdi = address of buf
+	pushq %rdi # (%rsp) for save addres of buf
 
 putText_loop:
-    movq (%rdi), %rax # get char
-    cmpb $0, (%rax) # check if 0
-    je putText_end # if 0 end
-    cmpq $Max_Buf_Out, index_UT # check if out of range
-    jl putText_complete # if not complete
-    call outImage # print buf
+	movq (%rsp),%rax
+	cmpb $0,(%rax)
+	je putText_done
+	cmpq $Max_Buf_Out,index_UT
+	jl putText_loop_update
+	call outImage
 
-putText_complete:
-    movq (%rsp),%rax # get char
-    movb (%rax),%al # get char
-    movq $buf_UT, %rdi # get buf pos
-    movq index_UT, %rdx # get pos
-    incq index_UT # inc pos
-    addq %rdx, %rdi # get pos in buf
-    movb %al, (%rdi) # put char in buf
-    incq (%rsp) # inc char
-    jmp putText_loop # loop
+putText_loop_update:
+	movq (%rsp),%rax
+	movb (%rax),%al
+	movq $buf_UT,%rdi
+	movq index_UT,%rdx
+	addq %rdx,%rdi
+	movb %al,(%rdi)
+	incq index_UT
+	incq (%rsp)
+	jmp putText_loop
 
-putText_end:
-    popq %rdi # restore rdi
-    ret
+putText_done:
+	movq $buf_UT,%rdi
+	movq index_UT,%rdx
+	addq %rdx,%rdi
+	movb $0,(%rdi) # null byte at end :)
+	popq %rdi
+	ret
 
 
 putChar:
     cmpq $Max_Buf_Out, index_UT # check if out of range
     jl putChar_complete # if not complete 
-    pushq rdi # save char
+    pushq %rdi # save char
     call outImage # print buf
-    popq rdi # get char
+    popq %rdi # get char
 
 putChar_complete:
     movq $buf_UT, %r8 # get buf pos
@@ -232,15 +232,15 @@ setOutPos:
 	# rdi = n
 	cmpq $0,%rdi
 	jl setOutPos_0
-	cmpq $MAX_OUTBUFFER_SIZE,%rdi
+	cmpq $Max_Buf_Out,%rdi
 	jge setOutPos_MAX
-	movq %rdi,outPos
+	movq %rdi,index_UT
 	ret
 
 setOutPos_0:
-	movq $0,outPos
+	movq $0,index_UT
 	ret
 
 setOutPos_MAX:
-	movq $MAX_OUTBUFFER_SIZE-1,outPos
+	movq $Max_Buf_Out-1,index_UT
 	ret
