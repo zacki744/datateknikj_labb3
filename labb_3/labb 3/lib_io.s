@@ -1,16 +1,16 @@
 .equ Max_Buf_In,64
 .equ Max_Buf_Out,64
 .data
-    buf_IN     .space Max_Buf_In+1
-    buf_UT     .space Max_Buf_Out+1
-    index_IN   .quad 0
-    index_UT   .quad 0
+    buf_IN:     .space Max_Buf_In+1
+    buf_UT:     .space Max_Buf_Out+1
+    index_IN:   .quad 0
+    index_UT:   .quad 0
 
 //input
 .global inImage, getInt, getText, getChar, getInPos, setInPos
 
 //output
-.global outImage, putInt, putText, putChar, getOutPos, getOutPos
+.global outImage, putInt, putText, putChar, getOutPos, setOutPos
 
 //input dec
 inImage:
@@ -101,7 +101,7 @@ getText_update:
 getText_end:
     movq 16(%rsp), %rax
     subq 8(%rsp), %rax
-    abbq $24, %rsp
+	addq $24,%rsp
     ret
 
 
@@ -123,21 +123,22 @@ getInPos:
     ret
     
 setInPos:
-    cmpq $Max_Buf_In,%rdi //check if out of range
-    jge setInPoslarg
-    cmpq %rdi,$0 //check if 0
-    jg setInPoszero
-    movq %rdi, index_IN //set
-    ret
+	# rdi = n
+	cmpq $0,%rdi
+	jl setInPos_0
+	cmpq $MAX_INBUFFER_SIZE,%rdi
+	jge setInPos_MAX
+	movq %rdi,inPos
+	ret 
 
 setInPoszero: //set to 0
     movq $0,%rdi
     ret
 
 setInPoslarg: //set to max
-
     movq index_IN, %rdi
     ret
+
 //output dec
 outImage:
     movq $buf_UT, %rdi
@@ -181,7 +182,7 @@ putInt_loop:
 
 putText:
     # rdi is used as addres of buf
-    pusq %rdi # save rdi
+    pushq %rdi # save rdi
 
 putText_loop:
     movq (%rdi), %rax # get char
@@ -210,7 +211,7 @@ putText_end:
 putChar:
     cmpq $Max_Buf_Out, index_UT # check if out of range
     jl putChar_complete # if not complete 
-    pusq rdi # save char
+    pushq rdi # save char
     call outImage # print buf
     popq rdi # get char
 
@@ -228,17 +229,18 @@ getOutPos:
     ret
 
 setOutPos:
-    cmpq $Max_Buf_Out, %rdi # check if out of range
-    jge setOutPoslarg # if out of range set to max
-    cmpq %rdi, $0 # check if 0
-    jg setOutPoszero # if 0 set to 0
-    movq %rdi, index_UT # set pos
-    ret
+	# rdi = n
+	cmpq $0,%rdi
+	jl setOutPos_0
+	cmpq $MAX_OUTBUFFER_SIZE,%rdi
+	jge setOutPos_MAX
+	movq %rdi,outPos
+	ret
 
-setOutPoszero:
-    movq $0, index_ut
-    ret
+setOutPos_0:
+	movq $0,outPos
+	ret
 
-setOutPoslarg:
-    movq $Max_Buf_Out-1, index_UT
-    ret
+setOutPos_MAX:
+	movq $MAX_OUTBUFFER_SIZE-1,outPos
+	ret
