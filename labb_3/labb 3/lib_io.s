@@ -181,31 +181,35 @@ putInt_loop:
     ret
 
 putText:
-    # rdi is used as addres of buf
-    pushq %rdi # save rdi
+	# rdi = address of buf
+	pushq %rdi # (%rsp) for save addres of buf
 
 putText_loop:
-    movq (%rdi), %rax # get char
-    cmpb $0, (%rax) # check if 0
-    je putText_end # if 0 end
-    cmpq $Max_Buf_Out, index_UT # check if out of range
-    jl putText_complete # if not complete
-    call outImage # print buf
+	movq (%rsp),%rax
+	cmpb $0,(%rax)
+	je putText_done
+	cmpq $Max_Buf_Out,index_UT
+	jl putText_loop_update
+	call outImage
 
-putText_complete:
-    movq (%rsp),%rax # get char
-    movb (%rax),%al # get char
-    movq $buf_UT, %rdi # get buf pos
-    movq index_UT, %rdx # get pos
-    incq index_UT # inc pos
-    addq %rdx, %rdi # get pos in buf
-    movb %al, (%rdi) # put char in buf
-    incq (%rsp) # inc char
-    jmp putText_loop # loop
+putText_loop_update:
+	movq (%rsp),%rax
+	movb (%rax),%al
+	movq $buf_UT,%rdi
+	movq index_UT,%rdx
+	addq %rdx,%rdi
+	movb %al,(%rdi)
+	incq index_UT
+	incq (%rsp)
+	jmp putText_loop
 
-putText_end:
-    popq %rdi # restore rdi
-    ret
+putText_done:
+	movq $buf_UT,%rdi
+	movq index_UT,%rdx
+	addq %rdx,%rdi
+	movb $0,(%rdi) # null byte at end :)
+	popq %rdi
+	ret
 
 
 putChar:
