@@ -221,9 +221,7 @@ putChar_complete:
     addq %rdx, %r8 # get pos in buf
     movb %dil, (%r8) # put char in buf 
     movq $0,1(%r8) # null attach
-
     ret
-
     
 getOutPos:
     movq index_UT, %rax 
