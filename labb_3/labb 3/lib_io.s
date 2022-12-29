@@ -1,8 +1,17 @@
+<<<<<<< HEAD
 .equ Max_Buf_In,64
 .equ Max_Buf_Out,64
 .data
     buf_IN     .space Max_Buf_In+1
     buf_UT     .space Max_Buf_Out+1
+=======
+.equ MAXPOS, 64
+
+.data
+    buf_IN     .quad MAXPOS+1
+    buf_UT     .quad MAXPOS+1
+    temp       .quad 0
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
     index_IN   .quad 0
     index_UT   .quad 0
 
@@ -14,11 +23,19 @@
 
 //input dec
 inImage:
+<<<<<<< HEAD
     movq $buf_IN, %rdi # get buf pos
     movq $Max_Buf_In+1, %rsi # get buf size
     movq stdin, %rdx # get stdin
     call fgets # read from stdin
     movq $0, index_IN # set index to 0
+=======
+    movq buf_IN, %rdi
+    movq %MAXPOS+1, %rsi
+    movq stdin, %rdx
+    call fgets
+    movq $0, index_IN
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
     ret
 
 getInt:
@@ -106,6 +123,7 @@ getText_end:
 
 getChar:
     // comparisons
+<<<<<<< HEAD
     cmpq $Max_Buf_In, index_IN
     jl getChar_complete
     call inImage
@@ -115,6 +133,14 @@ getChar_complete:
     movq index_IN, %rsi
     movq (%rdi,%rsi,1), %rax
     incq index_IN
+=======
+    cmpq $MAXPOS,index_IN
+    jl getChar_Complete
+    call inImage
+getChar_Complete:
+    movzbq (buf_IN,index_IN,1), %rax
+    incq index_IN 
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
     ret
 
 getInPos:
@@ -122,6 +148,7 @@ getInPos:
     ret
     
 setInPos:
+<<<<<<< HEAD
     cmpq $Max_Buf_In,%rdi //check if out of range
     jge setInPoslarg
     cmpq %rdi,$0 //check if 0
@@ -134,16 +161,33 @@ setInPoszero: //set to 0
     ret
 
 setInPoslarg: //set to max
+=======
+    cmpq $0, %rdi //check if 0
+    jl setInPos_Zero
+    cmpq MAXPOS,%rdi //check if out of range
+    jge setInPos_Large
+    movq %rdi, index_IN //set
+    ret
+setInPos_Zero: //set to 0
+    movq $0,%rdi
+    ret
+setInPos_Large: //set to max
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
     movq index_IN, %rdi
     ret
 //output dec
 outImage:
+<<<<<<< HEAD
     movq $buf_UT, %rdi
     call puts
     movq $0, buf_ut
+=======
+    movq buf_UT, %rdi
+    call puts
+    movq $0, buf_UT
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
     movq $0, index_UT
     ret
-    
 putInt:
     pushq %rbp # save rbp
     movq %rsp, %rbp # set rbp
@@ -178,6 +222,7 @@ putInt_loop:
     ret
 
 putText:
+<<<<<<< HEAD
     # rdi is used as addres of buf
     pusq %rdi # save rdi
 
@@ -202,10 +247,14 @@ putText_complete:
 
 putText_end:
     popq %rdi # restore rdi
+=======
+    
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
     ret
 
 
 putChar:
+<<<<<<< HEAD
     cmpq $Max_Buf_Out, index_UT # check if out of range
     jl putChar_complete # if not complete 
     pusq rdi # save char
@@ -219,6 +268,16 @@ putChar_complete:
     addq %rdx, %r8 # get pos in buf
     movb %dil, (%r8) # put char in buf 
     movq $0,1(%r8) # null attach
+=======
+    // comparisons  
+    cmpq $MAXPOS,index_UT
+    jl putChar_Complete
+    call outImage
+    ret
+putChar_Complete:
+    movq %rdi, (buf_UT,index_UT,1)
+    incq index_UT
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
     ret
 
     
@@ -227,6 +286,7 @@ getOutPos:
     ret
 
 setOutPos:
+<<<<<<< HEAD
     cmpq $Max_Buf_Out, %rdi # check if out of range
     jge setOutPoslarg # if out of range set to max
     cmpq %rdi, $0 # check if 0
@@ -241,3 +301,17 @@ setOutPoszero:
 setOutPoslarg:
     movq $Max_Buf_Out-1, index_UT
     ret
+=======
+    cmpq $0, %rdi //check if 0
+    jl setOutPos_Zero: //set to 0
+    cmpq MAXPOS,%rdi //check if out of range
+    jge setOutPos_Large
+    movq %rdi, index_UT //set
+    ret
+setOutPos_Zero: //set to 0
+    movq $0,%rdi
+    ret
+setOutPos_Large: //set to max
+    movq index_UT, %rdi
+    ret
+>>>>>>> b293a7b295b43f8a97e456aca33eecc04a2d9b8b
