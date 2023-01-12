@@ -20,60 +20,59 @@ inImage:
     movq stdin, %rdx # get stdin
     call fgets # read from stdin
     movq $0, index_IN # set index to 0
-
     ret
 
 getInt:
     pushq $0 # 8(%rsp) sign ( 0 mean positive 1 mean negative )
-	pushq $0 # (%rsp) we use it as result
-	# we need to skip all spaces
+    pushq $0 # (%rsp) we use it as result
+    # we need to skip all spaces
 
 getInt_s1:
     call getChar
-	cmpb $' ',%al
-	je getInt_s1
-	# first we need to check for sign
-	cmpb $'+',%al
-	je getInt_loop
-	cmpb $'-',%al
-	jne getInt_loop_cmp
-	movq $1,8(%rsp) # this mean negative :)
+    cmpb $' ',%al
+    je getInt_s1
+    # first we need to check for sign
+    cmpb $'+',%al
+    je getInt_loop
+    cmpb $'-',%al
+    jne getInt_loop_cmp
+    movq $1,8(%rsp) # this mean negative 🙂
 
 getInt_loop:
-	call getChar
+    call getChar
 
 getInt_loop_cmp:
-	cmpb $'0',%al
-	jl getInt_done
-	cmpb $'9',%al
-	jg getInt_done1
-	sub $'0',%al # convert to value
-	movzb %al,%r8
-	movq $10,%rax
-	mulq (%rsp)
-	addq %r8,%rax
-	movq %rax,(%rsp)
-	jmp getInt_loop
+    cmpb $'0',%al
+    jl getInt_done
+    cmpb $'9',%al
+    jg getInt_done1
+    sub $'0',%al # convert to value
+    movzb %al,%r8
+    movq $10,%rax
+    mulq (%rsp)
+    addq %r8,%rax
+    movq %rax,(%rsp)
+    jmp getInt_loop
 
 getInt_done:
-	cmpb $' ',%al
-	jne getInt_done1
+    cmpb $' ',%al
+    jne getInt_done1
 
 getInt_s2:
-	call getChar
-	cmpb $' ',%al
-	je getInt_s2
+    call getChar
+    cmpb $' ',%al
+    je getInt_s2
 
 getInt_done1:
-	decq index_IN
-	movq (%rsp),%rax
-	cmpq $0,8(%rsp)
-	je getInt_done2
-	negq %rax # this mean negative
+    decq index_IN
+    movq (%rsp),%rax
+    cmpq $0,8(%rsp)
+    je getInt_done2
+    negq %rax # this mean negative
 
 getInt_done2:
-	addq $16,%rsp
-	ret
+    addq $16,%rsp
+    ret
 
 getText:
     pushq %rsi
@@ -193,10 +192,10 @@ putText_loop:
 	call outImage
 
 putText_loop_update:
-	movq (%rsp),%rax
 	movb (%rax),%al
-	movq $buf_UT,%rdi
+	movq (%rsp),%rax
 	movq index_UT,%rdx
+	movq $buf_UT,%rdi
 	addq %rdx,%rdi
 	movb %al,(%rdi)
 	incq index_UT
@@ -220,12 +219,12 @@ putChar:
     popq %rdi # get char
 
 putChar_complete:
-    movq $buf_UT, %r8 # get buf pos
     movq index_UT, %rdx # get pos
-    incq index_UT # inc pos
+    movq $buf_UT, %r8 # get buf pos
     addq %rdx, %r8 # get pos in buf
     movb %dil, (%r8) # put char in buf 
     movq $0,1(%r8) # null attach
+    incq index_UT # inc pos
     ret
     
 getOutPos:
@@ -233,11 +232,11 @@ getOutPos:
     ret
 
 setOutPos:
-    cmpq $Max_Buf_Out, %rdi # check if out of range
-    jge setOutPoslarg # if out of range set to max
-    cmpq $0, %rdi # check if 0
-    jl setOutPoszero # if 0 set to 0
-    movq %rdi, index_UT # set pos
+    cmpq $Max_Buf_Out, %rdi
+    jge setOutPoslarg
+    cmpq $0, %rdi
+    jl setOutPoszero
+    movq %rdi, index_UT
     ret
 
 setOutPoszero:
