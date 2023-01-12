@@ -187,7 +187,7 @@ putText:
 putText_loop:
 	movq (%rsp),%rax
 	cmpb $0,(%rax)
-	je putText_done
+	je putText_mov
 	cmpq $Max_Buf_Out,index_UT
 	jl putText_loop_update
 	call outImage
@@ -203,7 +203,7 @@ putText_loop_update:
 	incq (%rsp)
 	jmp putText_loop
 
-putText_done:
+putText_mov:
 	movq $buf_UT,%rdi
 	movq index_UT,%rdx
 	addq %rdx,%rdi
