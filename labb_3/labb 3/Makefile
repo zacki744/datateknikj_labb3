@@ -3,7 +3,7 @@ AS=as
 LD=ld
 
 CFLAGS=-std=c99
-LFLAGS=-fPIC -no-pie
+LFLAGS=-fPIC -no-pie -g
 
 OUT=counter
 OBJ=counter_c.o counter_S.o
