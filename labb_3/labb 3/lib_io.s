@@ -33,9 +33,9 @@ getInt_s1:
     je getInt_s1 # if space jump to getInt_s1
     cmpb $'-',%al # check if '-'
     jne getInt_loop_cmp # if not jump to getInt_loop_cmp
-    cmpb $'+',%al # check if '+'
+    cmpb $'+',%al # check if '+' 
     je getInt_loop # if not jump to getInt_loop
-    movq $1,8(%rsp) # set sign to 1
+    movq $1,8(%rsp) # set sign to 1 ( negative )
 
 getInt_loop:
     call getChar # get char
@@ -159,20 +159,20 @@ putInt:
 
 putInt_pos:
     movq -16(%rbp), %rax # get number
-    movq $10, %rcx # set 10 to rcx
+    movq $10, %rcx # set 10 to rcx for div by 10 later on
 
 putInt_loop_init:
-    movq $0, %rdx # clear rdx
-    divq %rcx # div by 10
-    addq $'0', %rdx # add '0'
-    pushq %rdx # push to stack
-    incq -8(%rbp) # inc stack size
+    movq $0, %rdx # clear rdx 
+    divq %rcx # div by 10 and get result in rax and remainder in rdx
+    addq $'0', %rdx # add '0' 
+    pushq %rdx # push to stack 
+    incq -8(%rbp) # inc stack size 
     cmpq $0, %rax # check if 0
     jne putInt_loop_init # if not 0 loop
 
 putInt_loop:
     popq %rdi # pop from stack
-    call putChar # print char
+    call putChar # print char 
     decq -8(%rbp) # dec stack size
     cmpq $0, -8(%rbp) # check if 0
     jne putInt_loop # if not 0 loop
@@ -203,10 +203,10 @@ putText_loop_update:
     jmp putText_loop # loop
 
 putText_mov:
-	movq $buf_UT,%rdi # get buf pos
-	movq index_UT,%rdx # get index
-	addq %rdx,%rdi # add index to buf pos
-	movb $0,(%rdi) # null attach
+	movq $buf_UT,%rdi # get buf pos 
+	movq index_UT,%rdx # get index 
+	addq %rdx,%rdi # add index to buf pos 
+	movb $0,(%rdi) # null attach 
 	popq %rdi # restore address of buf
 	ret
 
