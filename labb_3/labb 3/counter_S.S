@@ -5,6 +5,7 @@
 .text
     .global  interrupt 
     .global  setup
+
 interrupt:
     mov     counter, %rax	# get counter address
     inc     %rax			# increment counter
